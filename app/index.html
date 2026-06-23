@@ -333,14 +333,97 @@
     #chat-panel{width:100%;}
     header h1{font-size:19px;}
     footer{font-size:11px;padding:6px 16px;}
+  }  /* ── Auth screen ── */
+  #auth-screen{
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:20px;
   }
+  .auth-card{
+    background:white;border-radius:20px;padding:40px;
+    max-width:420px;width:100%;
+    box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center;
+  }
+  .auth-logo{font-size:28px;font-weight:700;color:var(--ink);margin:0 0 6px;}
+  .auth-tagline{font-size:14px;color:var(--ink-soft);margin:0 0 32px;}
+  .auth-label{
+    display:block;font-size:12px;font-weight:700;
+    color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.07em;
+    margin-bottom:8px;text-align:left;
+  }
+  .auth-input{
+    width:100%;padding:12px 16px;
+    border:1.5px solid var(--border);border-radius:12px;
+    font-family:'Outfit',sans-serif;font-size:15px;
+    color:var(--ink);background:var(--cream);
+    margin-bottom:14px;outline:none;
+    transition:border-color 0.15s;
+  }
+  .auth-input:focus{border-color:var(--pine);}
+  .auth-otp-input{text-align:center;font-size:26px;font-weight:700;letter-spacing:0.25em;}
+  .auth-btn{
+    width:100%;padding:13px;background:var(--pine);color:white;
+    border:none;border-radius:12px;
+    font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;
+    cursor:pointer;transition:opacity 0.15s;
+  }
+  .auth-btn:disabled{opacity:0.5;cursor:default;}
+  .auth-btn:not(:disabled):hover{opacity:0.88;}
+  .auth-hint{font-size:13px;color:var(--ink-soft);margin:0 0 20px;line-height:1.5;}
+  .auth-back{
+    background:none;border:none;font-family:'Outfit',sans-serif;
+    font-size:13px;color:var(--pine);cursor:pointer;
+    padding:0;margin-top:14px;display:block;width:100%;
+  }
+  .auth-error{
+    background:#FEE2E2;color:#991B1B;border-radius:8px;
+    padding:10px 14px;font-size:13px;margin-bottom:12px;
+    display:none;text-align:left;
+  }
+  .signout-btn{
+    background:none;border:1px solid var(--border);border-radius:8px;
+    padding:4px 10px;font-family:'Outfit',sans-serif;font-size:12px;
+    color:var(--ink-soft);cursor:pointer;flex-shrink:0;margin-left:8px;
+  }
+  .signout-btn:hover{background:var(--pine-dim);}
+
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- Auth Screen -->
+<div id="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <h1 class="auth-logo">Wander Maine</h1>
+    <p class="auth-tagline">Your personal guide to the best of Maine</p>
+
+    <!-- Step 1: Email entry -->
+    <div id="auth-step-email">
+      <div class="auth-error" id="auth-error-email"></div>
+      <label class="auth-label" for="auth-email">Email address</label>
+      <input class="auth-input" id="auth-email" type="email"
+             placeholder="you@example.com" autocomplete="email">
+      <button class="auth-btn" id="auth-send-btn">Send code</button>
+    </div>
+
+    <!-- Step 2: OTP code entry -->
+    <div id="auth-step-otp" style="display:none;">
+      <p class="auth-hint">We sent a 6-digit code to<br><strong id="auth-email-shown"></strong></p>
+      <div class="auth-error" id="auth-error-otp"></div>
+      <label class="auth-label" for="auth-token">Verification code</label>
+      <input class="auth-input auth-otp-input" id="auth-token" type="text"
+             inputmode="numeric" pattern="[0-9]*" maxlength="6"
+             placeholder="000000" autocomplete="one-time-code">
+      <button class="auth-btn" id="auth-verify-btn">Verify</button>
+      <button class="auth-back" id="auth-back-btn">← Try a different email</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
   <header>
     <h1>Wander Maine</h1>
     <span class="count" id="result-count">Loading…</span>
+    <button class="signout-btn" id="signout-btn">Sign out</button>
   </header>
 
   <div class="layout">
@@ -415,10 +498,13 @@
   </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
   const SUPABASE_URL = "https://skylwvepsgxwxhblqyil.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNreWx3dmVwc2d4d3hoYmxxeWlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDk3MTYsImV4cCI6MjA5NzI4NTcxNn0.YQT6DH8alaGMy1lqCSpiLKwmsF7_Xm-11opo5Ik7YEs";
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let allLocations = [];
   let markerRefs = {};
@@ -685,11 +771,13 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     document.getElementById("chat-send").disabled = true;
 
     try{
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session ? session.access_token : SUPABASE_KEY;
       const res = await fetch(`${SUPABASE_URL}/functions/v1/chat-proxy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Authorization": `Bearer ${token}`,
           "apikey": SUPABASE_KEY
         },
         body: JSON.stringify({
@@ -760,7 +848,106 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     sendChat(ex.dataset.q);
   });
 
-  // --- init ---
+  // ── Auth screen logic ──
+  let pendingEmail = "";
+
+  function showAuthError(id, msg){
+    const el = document.getElementById(id);
+    el.textContent = msg; el.style.display = "block";
+  }
+  function clearAuthErrors(){
+    ["auth-error-email","auth-error-otp"].forEach(id => {
+      const el = document.getElementById(id);
+      el.textContent = ""; el.style.display = "none";
+    });
+  }
+
+  document.getElementById("auth-send-btn").addEventListener("click", async () => {
+    clearAuthErrors();
+    const email = document.getElementById("auth-email").value.trim();
+    if(!email || !email.includes("@")){
+      showAuthError("auth-error-email", "Please enter a valid email address."); return;
+    }
+    const btn = document.getElementById("auth-send-btn");
+    btn.disabled = true; btn.textContent = "Sending…";
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    btn.disabled = false; btn.textContent = "Send code";
+    if(error){ showAuthError("auth-error-email", error.message); return; }
+    pendingEmail = email;
+    document.getElementById("auth-email-shown").textContent = email;
+    document.getElementById("auth-step-email").style.display = "none";
+    document.getElementById("auth-step-otp").style.display = "block";
+    document.getElementById("auth-token").focus();
+  });
+
+  document.getElementById("auth-verify-btn").addEventListener("click", async () => {
+    clearAuthErrors();
+    const token = document.getElementById("auth-token").value.trim();
+    if(token.length !== 6){
+      showAuthError("auth-error-otp", "Please enter the 6-digit code from your email."); return;
+    }
+    const btn = document.getElementById("auth-verify-btn");
+    btn.disabled = true; btn.textContent = "Verifying…";
+    const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token, type: "email" });
+    btn.disabled = false; btn.textContent = "Verify";
+    if(error){ showAuthError("auth-error-otp", "That code didn't work — please check it and try again."); return; }
+    // onAuthStateChange will show the app
+  });
+
+  document.getElementById("auth-back-btn").addEventListener("click", () => {
+    clearAuthErrors();
+    document.getElementById("auth-step-otp").style.display = "none";
+    document.getElementById("auth-step-email").style.display = "block";
+    document.getElementById("auth-token").value = "";
+    pendingEmail = "";
+  });
+
+  document.getElementById("auth-email").addEventListener("keydown", e => {
+    if(e.key === "Enter") document.getElementById("auth-send-btn").click();
+  });
+  document.getElementById("auth-token").addEventListener("keydown", e => {
+    if(e.key === "Enter") document.getElementById("auth-verify-btn").click();
+  });
+
+  document.getElementById("signout-btn").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+  });
+
+  // ── App / Auth screen toggling ──
+  let appInitialized = false;
+
+  function showApp(){
+    document.getElementById("auth-screen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+    if(!appInitialized){
+      appInitialized = true;
+      initMap();
+      loadLocations();
+    }
+  }
+
+  function showAuthScreen(){
+    document.getElementById("app").style.display = "none";
+    document.getElementById("auth-screen").style.display = "flex";
+    document.getElementById("auth-step-email").style.display = "block";
+    document.getElementById("auth-step-otp").style.display = "none";
+    document.getElementById("auth-email").value = "";
+    document.getElementById("auth-token").value = "";
+    clearAuthErrors();
+    pendingEmail = "";
+  }
+
+  // Listen for auth state changes (sign-in, sign-out, session restore)
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if(session){ showApp(); } else { showAuthScreen(); }
+  });
+
+  // Check for an existing session on page load
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if(session){ showApp(); } else { showAuthScreen(); }
+  });
+
+  // ── Map + data init (called only after auth) ──
   function initMap(){
     map = L.map("map", { minZoom: 8, maxZoom: 18, zoomControl: true }).setView([43.75, -70.25], 10);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -788,26 +975,18 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
   async function loadLocations(){
     showMapStatus(`<div class="map-loading">Loading places…</div>`);
     try{
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session ? session.access_token : SUPABASE_KEY;
       console.log("Fetching locations from Supabase…");
       const res = await fetch(`${SUPABASE_URL}/rest/v1/locations?select=*&order=name`, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        }
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` }
       });
       const bodyText = await res.text();
-      if(!res.ok){
-        throw new Error(`Database returned status ${res.status}: ${bodyText.slice(0, 200)}`);
-      }
+      if(!res.ok) throw new Error(`Database returned status ${res.status}: ${bodyText.slice(0,200)}`);
       let data;
-      try{
-        data = JSON.parse(bodyText);
-      }catch(parseErr){
-        throw new Error("Database response wasn't valid JSON: " + bodyText.slice(0, 200));
-      }
-      if(!Array.isArray(data)){
-        throw new Error("Unexpected response shape from database: " + bodyText.slice(0, 200));
-      }
+      try{ data = JSON.parse(bodyText); }
+      catch(parseErr){ throw new Error("Database response wasn't valid JSON: " + bodyText.slice(0,200)); }
+      if(!Array.isArray(data)) throw new Error("Unexpected response shape from database: " + bodyText.slice(0,200));
       console.log(`Loaded ${data.length} locations.`);
       allLocations = data;
       clearMapStatus();
@@ -829,8 +1008,6 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     }
   }
 
-  initMap();
-  loadLocations();
 </script>
 </body>
 </html>
