@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wander Maine</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EFE3;
+    --surface:#FFFFFF;
+    --ink:#20281F;
+    --ink-soft:#5B6258;
+    --border:#DCD3BC;
+    --pine:#3C6E47;
+    --pine-dim:#E8EFE8;
+    --lobster:#C75A33;
+    --lobster-dim:#F6E6DD;
+    --plum:#5C5189;
+    --plum-dim:#EAE7F2;
+    --buoy:#E2A33B;
+    --amber:#B8671E;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    font-family:'Outfit', system-ui, sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:16px;
+  }
+  #app{
+    display:flex;flex-direction:column;
+    height:720px;
+    width:100%;
+    max-width:1100px;
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    border-radius:16px;
+    border:1px solid var(--border);
+    box-shadow:0 2px 16px rgba(0,0,0,.06);
+  }
+
+  header{
+    display:flex;align-items:baseline;gap:14px;
+    padding:16px 22px;
+    border-bottom:1px solid var(--border);
+    background:var(--cream);
+    flex-shrink:0;
+    z-index:20;
+  }
+  header h1{
+    font-family:'Outfit', sans-serif;
+    font-weight:700;
+    font-size:24px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  header .count{
+    margin-left:auto;
+    font-size:13px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .layout{flex:1;display:flex;min-height:0;}
+
+  .sidebar{
+    width:340px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid var(--border);
+    background:var(--surface);
+    overflow:hidden;
+  }
+  .filters{
+    padding:16px 18px 14px;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .filter-row{margin-bottom:12px;}
+  .filter-row:last-child{margin-bottom:0;}
+  .filter-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+    display:block;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    border:1px solid var(--border);
+    background:var(--cream);
+    color:var(--ink);
+    font-size:14px;
+    font-family:'Outfit', sans-serif;
+    padding:6px 13px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:all .12s ease;
+    user-select:none;
+  }
+  .chip:hover{border-color:var(--ink-soft);}
+  .chip.active{color:#fff;border-color:transparent;background:var(--ink);}
+  .chip.active[data-cat="Outdoors"]{background:var(--ink);}
+  .chip.active[data-cat="Food & Dining"]{background:var(--ink);}
+  .chip.active[data-cat="Culture"]{background:var(--ink);}
+  .chip.active[data-single="true"]{background:var(--ink);}
+
+  .search-box{
+    width:100%;
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:14px;
+    font-family:'Outfit', sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+  }
+  .search-box:focus{outline:2px solid var(--pine);outline-offset:1px;}
+
+  .location-list{
+    flex:1;
+    overflow-y:auto;
+    padding:6px 12px 16px;
+  }
+  .loc-card{
+    padding:11px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    border:1px solid transparent;
+    margin-bottom:4px;
+    transition:background .12s ease;
+  }
+  .loc-card:hover{background:var(--cream);}
+  .loc-card.highlighted{
+    background:#FFF7E9;
+    border-color:var(--buoy);
+  }
+  .loc-card .badge{
+    display:inline-block;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:5px;
+    margin-bottom:5px;
+  }
+  .badge.Outdoors{background:var(--pine-dim);color:var(--pine);}
+  .badge.Food---Dining,.badge[data-cat="Food & Dining"]{background:var(--lobster-dim);color:var(--lobster);}
+  .badge.Culture{background:var(--plum-dim);color:var(--plum);}
+  .loc-card .ai-tag{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:10px;font-weight:600;color:#8A6512;
+    background:#FFF1D6;border-radius:5px;padding:2px 7px;margin-bottom:5px;margin-left:6px;
+  }
+  .loc-card .name{font-weight:600;font-size:15px;margin:0 0 2px;}
+  .loc-card .meta{font-size:13px;color:var(--ink-soft);margin:0 0 4px;}
+  .loc-card .desc{font-size:13px;color:var(--ink-soft);line-height:1.4;margin:0;}
+  .empty-state{padding:30px 16px;text-align:center;color:var(--ink-soft);font-size:14px;}
+
+  .map-wrap{flex:1;position:relative;}
+  #map{position:absolute;inset:0;}
+  .marker-pin{
+    width:100%;height:100%;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+  }
+  .loc-marker.highlighted .marker-pin{
+    animation:pulse 1.4s ease-in-out infinite;
+    box-shadow:0 0 0 0 rgba(226,163,59,.6), 0 2px 6px rgba(0,0,0,.3);
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(226,163,59,.55), 0 2px 6px rgba(0,0,0,.3);}
+    70%{box-shadow:0 0 0 12px rgba(226,163,59,0), 0 2px 6px rgba(0,0,0,.3);}
+    100%{box-shadow:0 0 0 0 rgba(226,163,59,0), 0 2px 6px rgba(0,0,0,.3);}
+  }
+  .leaflet-popup-content{font-family:'Outfit', sans-serif;min-width:200px;}
+  .popup-name{font-family:'Outfit', sans-serif;font-weight:700;font-size:16px;margin:0 0 4px;}
+  .popup-meta{font-size:13px;color:var(--ink-soft);margin:0 0 6px;}
+  .popup-desc{font-size:14px;line-height:1.4;margin:0 0 8px;}
+  .popup-link{font-size:13px;font-weight:600;color:var(--pine);text-decoration:none;}
+  .popup-link:hover{text-decoration:underline;}
+
+  .map-loading{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:var(--cream);font-size:14px;color:var(--ink-soft);z-index:10;
+  }
+  .map-error{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--cream);font-size:14px;color:var(--ink-soft);gap:10px;text-align:center;padding:20px;z-index:10;
+  }
+  .map-error button{
+    background:var(--pine);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;
+  }
+
+  #chat-toggle{
+    position:absolute;bottom:20px;right:20px;
+    background:var(--amber);color:#fff;
+    border:none;border-radius:999px;
+    padding:13px 20px;
+    font-family:'Outfit', sans-serif;
+    font-weight:600;font-size:14px;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    z-index:5000;
+    transition:transform .12s ease;
+  }
+  #chat-toggle:hover{transform:translateY(-1px);}
+
+  #chat-panel{
+    position:absolute;top:0;right:0;bottom:0;
+    width:380px;
+    background:var(--surface);
+    border-left:1px solid var(--border);
+    box-shadow:-8px 0 24px rgba(0,0,0,.12);
+    display:flex;flex-direction:column;
+    transform:translateX(100%);
+    transition:transform .22s ease;
+    z-index:5001;
+  }
+  #chat-panel.open{transform:translateX(0);}
+  .chat-header{
+    padding:16px 18px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;
+  }
+  .chat-header h2{font-family:'Outfit', sans-serif;font-size:17px;margin:0;font-weight:700;}
+  .chat-header button{
+    background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;line-height:1;
+  }
+  .chat-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+  .chat-empty{color:var(--ink-soft);font-size:14px;line-height:1.5;}
+  .chat-empty .example{
+    display:block;margin-top:10px;padding:9px 12px;background:var(--cream);
+    border-radius:10px;font-size:14px;cursor:pointer;border:1px solid var(--border);
+  }
+  .chat-empty .example:hover{border-color:var(--ink-soft);}
+  .msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.45;}
+  .msg.user{align-self:flex-end;background:var(--pine);color:#fff;border-bottom-right-radius:4px;}
+  .msg.assistant{align-self:flex-start;background:var(--cream);color:var(--ink);border-bottom-left-radius:4px;}
+  .msg.assistant.loading{color:var(--ink-soft);font-style:italic;}
+  .msg-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .loc-pill{
+    background:#fff;
+    border:1px solid var(--border);
+    border-left:3px solid var(--pill-color, var(--ink-soft));
+    border-radius:8px;
+    padding:6px 11px;
+    font-size:13px;
+    font-family:'Outfit', sans-serif;
+    cursor:pointer;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .loc-pill:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.15);}
+  .loc-pill:active{transform:translateY(0);}
+  .chat-form{
+    display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0;
+  }
+  .chat-form input{
+    flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 12px;
+    font-family:'Outfit', sans-serif;font-size:14px;background:var(--cream);color:var(--ink);
+  }
+  .chat-form input:focus{outline:2px solid var(--pine);outline-offset:1px;}
+  .chat-form button{
+    background:var(--amber);color:#fff;border:none;border-radius:10px;
+    padding:0 16px;font-weight:600;font-size:14px;cursor:pointer;
+  }
+  .chat-form button:disabled{opacity:.5;cursor:default;}
+
+  footer{
+    flex-shrink:0;
+    text-align:center;
+    padding:8px 16px;
+    font-size:12px;
+    color:var(--ink-soft);
+    background:var(--cream);
+    border-top:1px solid var(--border);
+    letter-spacing:0.01em;
+  }
+
+  #filters-summary{
+    display:none;
+  }
+  .summary-pills{display:flex;flex-wrap:nowrap;gap:5px;overflow:hidden;flex:1;min-width:0;}
+  .summary-pill{
+    font-size:12px;font-weight:500;
+    padding:4px 10px;border-radius:999px;
+    background:var(--ink);color:#fff;
+    white-space:nowrap;flex-shrink:0;
+  }
+  .summary-pill.default{background:var(--cream);color:var(--ink-soft);border:1px solid var(--border);}
+  #filters-toggle-btn{
+    flex-shrink:0;font-size:12px;font-weight:600;
+    color:var(--pine);background:none;border:none;
+    cursor:pointer;white-space:nowrap;padding:0 0 0 8px;
+  }
+
+  @media (max-width: 760px){
+    #app{height:100dvh;min-height:560px;}
+    .layout{flex-direction:column;}
+    .sidebar{
+      width:100%;
+      border-right:none;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    #filters-summary{
+      display:flex;align-items:center;gap:4px;
+      padding:8px 14px;
+      border-bottom:1px solid var(--border);
+      background:var(--surface);
+      flex-shrink:0;
+    }
+    #filters-panel{display:none;}
+    #filters-panel.open{display:block;}
+    .filters{padding:12px 14px 10px;}
+    .location-list{max-height:130px;}
+    .map-wrap{flex:1;min-height:200px;}
+    #chat-panel{width:100%;}
+    header h1{font-size:19px;}
+    footer{font-size:11px;padding:6px 16px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Wander Maine</h1>
+    <span class="count" id="result-count">Loading…</span>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div id="filters-summary">
+        <div class="summary-pills" id="summary-pills"></div>
+        <button id="filters-toggle-btn">Edit filters ▾</button>
+      </div>
+      <div id="filters-panel">
+      <div class="filters">
+        <div class="filter-row">
+          <span class="filter-label">Activity</span>
+          <div class="chips" id="category-chips">
+            <button class="chip active" data-cat="Outdoors">🌲 Outdoors</button>
+            <button class="chip active" data-cat="Food & Dining">🍴 Food &amp; Dining</button>
+            <button class="chip active" data-cat="Culture">🎭 Culture</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Season</span>
+          <div class="chips" id="season-chips">
+            <button class="chip active" data-single="true" data-val="All">All</button>
+            <button class="chip" data-single="true" data-val="Year-round">Year-round</button>
+            <button class="chip" data-single="true" data-val="Spring">Spring</button>
+            <button class="chip" data-single="true" data-val="Summer">Summer</button>
+            <button class="chip" data-single="true" data-val="Fall">Fall</button>
+            <button class="chip" data-single="true" data-val="Winter">Winter</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Price</span>
+          <div class="chips" id="price-chips">
+            <button class="chip active" data-single="true" data-val="All">All</button>
+            <button class="chip" data-single="true" data-val="Free">Free</button>
+            <button class="chip" data-single="true" data-val="$">$</button>
+            <button class="chip" data-single="true" data-val="$$">$$</button>
+            <button class="chip" data-single="true" data-val="$$$">$$$</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <input class="search-box" id="search-box" type="text" placeholder="Search by name or keyword…">
+        </div>
+      </div>
+      </div>
+      <div class="location-list" id="location-list"></div>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+    </main>
+  </div>
+  <footer>Made with ❤️ by Chad Bonner (and his assistant, Claude) in Portland, Maine.</footer>
+</div>
+
+<button id="chat-toggle">💬 Ask your Maine guide</button>
+<div id="chat-panel">
+  <div class="chat-header">
+    <h2>Your Maine guide</h2>
+    <button id="chat-close" aria-label="Close">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-empty" id="chat-empty">
+      Ask me anything about places to visit — I'll point you to spots from the list and highlight them on the map.
+      <span class="example" data-q="Where can I get a good lobster roll near a beach?">"Where can I get a good lobster roll near a beach?"</span>
+      <span class="example" data-q="I have a free afternoon with kids, what should we do?">"I have a free afternoon with kids, what should we do?"</span>
+      <span class="example" data-q="Best spot for sunset that isn't crowded?">"Best spot for sunset that isn't crowded?"</span>
+    </div>
+  </div>
+  <form class="chat-form" id="chat-form">
+    <input id="chat-input" type="text" placeholder="Ask a question…" autocomplete="off">
+    <button type="submit" id="chat-send">Send</button>
+  </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+  const SUPABASE_URL = "https://skylwvepsgxwxhblqyil.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNreWx3dmVwc2d4d3hoYmxxeWlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDk3MTYsImV4cCI6MjA5NzI4NTcxNn0.YQT6DH8alaGMy1lqCSpiLKwmsF7_Xm-11opo5Ik7YEs";
+
+  let allLocations = [];
+  let markerRefs = {};
+  let highlightedNames = new Set();
+  let map, layerGroup;
+
+  const state = {
+    categories: new Set(["Outdoors", "Food & Dining", "Culture"]),
+    season: "All",
+    price: "All",
+    search: ""
+  };
+
+  function categoryColor(cat){
+    return cat === "Outdoors" ? "#3C6E47" : cat === "Food & Dining" ? "#C75A33" : "#5C5189";
+  }
+  function categoryGlyph(cat){
+    return cat === "Outdoors" ? "🌲" : cat === "Food & Dining" ? "🍴" : "🎭";
+  }
+  function getPriceTier(price){
+    if(!price) return null;
+    const p = price.trim();
+    if(/^free/i.test(p)) return "Free";
+    const m = p.match(/^\$+/);
+    return m ? m[0] : null;
+  }
+  function getSeasonTags(season){
+    const tags = [];
+    if(!season) return tags;
+    const s = season.toLowerCase();
+    if(s.includes("year-round")) tags.push("Year-round","Spring","Summer","Fall","Winter");
+    if(s.includes("spring")) tags.push("Spring");
+    if(s.includes("summer")) tags.push("Summer");
+    if(s.includes("fall")) tags.push("Fall");
+    if(s.includes("winter")) tags.push("Winter");
+    return tags;
+  }
+
+  function makeIcon(loc, highlighted){
+    const color = categoryColor(loc.category);
+    const size = highlighted ? 36 : 26;
+    return L.divIcon({
+      className: "loc-marker" + (highlighted ? " highlighted" : ""),
+      html: `<div class="marker-pin" style="background:${color};width:${size}px;height:${size}px;">${categoryGlyph(loc.category)}</div>`,
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2],
+      popupAnchor: [0, -size/2]
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function popupHtml(loc){
+    return `
+      <div class="popup-name">${escapeHtml(loc.name)}</div>
+      <div class="popup-meta">${escapeHtml(loc.category)} · ${escapeHtml(loc.town || "")} · ${escapeHtml(loc.price || "")} · ${escapeHtml(loc.season || "")}</div>
+      <div class="popup-desc">${escapeHtml(loc.description || "")}</div>
+      ${loc.maps_url ? `<a class="popup-link" href="${escapeHtml(loc.maps_url)}" target="_blank" rel="noopener">Open in Google Maps ↗</a>` : ""}
+    `;
+  }
+
+  function passesFilters(loc){
+    if(!state.categories.has(loc.category)) return false;
+    if(state.price !== "All" && getPriceTier(loc.price) !== state.price) return false;
+    if(state.season !== "All" && !getSeasonTags(loc.season).includes(state.season)) return false;
+    if(state.search){
+      const q = state.search.toLowerCase();
+      const hay = `${loc.name} ${loc.description} ${loc.town}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function renderList(visible){
+    const list = document.getElementById("location-list");
+    if(visible.length === 0){
+      list.innerHTML = `<div class="empty-state">Nothing matches those filters yet. Try widening your search.</div>`;
+      return;
+    }
+    list.innerHTML = visible.map(loc => {
+      const isHi = highlightedNames.has(loc.name);
+      const badgeClass = loc.category === "Food & Dining" ? "Food---Dining" : loc.category;
+      return `
+        <div class="loc-card ${isHi ? "highlighted" : ""}" data-name="${escapeHtml(loc.name)}">
+          <span class="badge ${badgeClass}" data-cat="${escapeHtml(loc.category)}">${escapeHtml(loc.category)}</span>
+          ${isHi ? `<span class="ai-tag">✺ guide pick</span>` : ""}
+          <p class="name">${escapeHtml(loc.name)}</p>
+          <p class="meta">${escapeHtml(loc.town || "")} · ${escapeHtml(loc.price || "")} · ${escapeHtml(loc.season || "")}</p>
+          <p class="desc">${escapeHtml(loc.description || "")}</p>
+        </div>
+      `;
+    }).join("");
+    list.querySelectorAll(".loc-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const name = card.getAttribute("data-name");
+        focusLocation(name);
+      });
+    });
+  }
+
+  function focusLocation(name){
+    const marker = markerRefs[name];
+    if(!marker){
+      highlightLocations([name]);
+      return;
+    }
+    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 13), {duration: 0.6});
+    marker.openPopup();
+  }
+
+  function render(){
+    layerGroup.clearLayers();
+    markerRefs = {};
+    const visible = allLocations.filter(passesFilters);
+    visible.forEach(loc => {
+      const marker = L.marker([loc.lat, loc.lng], { icon: makeIcon(loc, highlightedNames.has(loc.name)) });
+      marker.bindPopup(popupHtml(loc));
+      marker.addTo(layerGroup);
+      markerRefs[loc.name] = marker;
+    });
+    renderList(visible);
+    document.getElementById("result-count").textContent = `${visible.length} place${visible.length === 1 ? "" : "s"}`;
+  }
+
+  function syncFilterUI(){
+    document.querySelectorAll("#category-chips .chip").forEach(chip => {
+      chip.classList.toggle("active", state.categories.has(chip.dataset.cat));
+    });
+    document.querySelectorAll("#season-chips .chip").forEach(chip => {
+      chip.classList.toggle("active", chip.dataset.val === state.season);
+    });
+    document.querySelectorAll("#price-chips .chip").forEach(chip => {
+      chip.classList.toggle("active", chip.dataset.val === state.price);
+    });
+    document.getElementById("search-box").value = state.search;
+    updateFiltersSummary();
+  }
+
+  function updateFiltersSummary(){
+    const container = document.getElementById("summary-pills");
+    if(!container) return;
+    const pills = [];
+    const allCats = ["Outdoors","Food & Dining","Culture"];
+    const activeCats = allCats.filter(c => state.categories.has(c));
+    if(activeCats.length === allCats.length){
+      pills.push({label:"All activities", def:true});
+    } else {
+      activeCats.forEach(c => {
+        const glyphs = {"Outdoors":"🌲","Food & Dining":"🍴","Culture":"🎭"};
+        pills.push({label: glyphs[c] + " " + c, def:false});
+      });
+    }
+    if(state.season !== "All") pills.push({label: state.season, def:false});
+    if(state.price !== "All") pills.push({label: state.price, def:false});
+    if(state.search) pills.push({label: `"${state.search}"`, def:false});
+    container.innerHTML = pills.map(p =>
+      `<span class="summary-pill${p.def ? " default" : ""}">${escapeHtml(p.label)}</span>`
+    ).join("");
+  }
+
+  function highlightLocations(names){
+    highlightedNames = new Set(names.filter(n => allLocations.some(l => l.name === n)));
+    state.categories = new Set(["Outdoors", "Food & Dining", "Culture"]);
+    state.season = "All";
+    state.price = "All";
+    state.search = "";
+    syncFilterUI();
+    render();
+    const matched = names.map(n => markerRefs[n]).filter(Boolean);
+    if(matched.length){
+      const group = L.featureGroup(matched);
+      map.flyToBounds(group.getBounds().pad(0.4), { duration: 0.8, maxZoom: 14 });
+      setTimeout(() => matched[0].openPopup(), 700);
+      const firstCard = document.querySelector(".loc-card.highlighted");
+      if(firstCard) firstCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  // --- filter event wiring ---
+  document.getElementById("category-chips").addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    if(!chip) return;
+    const cat = chip.dataset.cat;
+    if(state.categories.has(cat)){
+      if(state.categories.size > 1) state.categories.delete(cat);
+    } else {
+      state.categories.add(cat);
+    }
+    syncFilterUI();
+    render();
+  });
+  function wireSingleSelect(containerId, stateKey){
+    document.getElementById(containerId).addEventListener("click", e => {
+      const chip = e.target.closest(".chip");
+      if(!chip) return;
+      state[stateKey] = chip.dataset.val;
+      syncFilterUI();
+      render();
+    });
+  }
+  wireSingleSelect("season-chips", "season");
+  wireSingleSelect("price-chips", "price");
+  document.getElementById("search-box").addEventListener("input", e => {
+    state.search = e.target.value;
+    render();
+  });
+  // --- chat ---
+  let chatHistory = [];
+
+  function buildSystemPrompt(){
+    const compact = allLocations.map(l => ({
+      name: l.name, category: l.category, town: l.town,
+      description: l.description, price: l.price, season: l.season
+    }));
+    return `You are a friendly, knowledgeable local guide for Maine, helping travelers decide what to do. You only know about the places in the list below — never invent or assume places that aren't in this list.
+
+Places (JSON):
+${JSON.stringify(compact)}
+
+Your entire reply must be a single JSON object — nothing before it, nothing after it. No prose, no markdown, no code fences, no explanation outside the JSON. Do not write a conversational paragraph and then also output JSON; the conversational answer belongs ONLY inside the "answer" field of the JSON object itself. Output exactly this shape and nothing else:
+{"answer": "a friendly, conversational 2-4 sentence response that recommends specific places from the list when relevant", "matches": ["Exact Place Name", "Exact Place Name 2"]}
+
+The "matches" array must contain the exact "name" values (copied exactly, case-sensitive, from the list above) of every place mentioned in "answer", so they can be highlighted on a map. If nothing in the list fits the question, say so honestly inside "answer" and return an empty matches array. Limit matches to at most 6 places. Remember: respond with the raw JSON object only — your response must start with { and end with }.`;
+  }
+
+  function appendMessage(role, text, loading){
+    document.getElementById("chat-empty").style.display = "none";
+    const wrap = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = `msg ${role}${loading ? " loading" : ""}`;
+    div.textContent = text;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return div;
+  }
+
+  function buildPillsHtml(names){
+    return names.map(name => {
+      const loc = allLocations.find(l => l.name === name);
+      if(!loc) return "";
+      return `<button type="button" class="loc-pill" data-name="${escapeHtml(name)}" style="--pill-color:${categoryColor(loc.category)}">${categoryGlyph(loc.category)} ${escapeHtml(name)}</button>`;
+    }).join("");
+  }
+
+  function renderAssistantMessage(el, answerText, matchNames){
+    const validNames = (matchNames || []).filter(n => allLocations.some(l => l.name === n));
+    el.innerHTML = `<div class="msg-text"></div>` + (validNames.length ? `<div class="msg-pills">${buildPillsHtml(validNames)}</div>` : "");
+    el.querySelector(".msg-text").textContent = answerText;
+    return validNames;
+  }
+
+  document.getElementById("chat-messages").addEventListener("click", e => {
+    const pill = e.target.closest(".loc-pill");
+    if(!pill) return;
+    focusLocation(pill.dataset.name);
+  });
+
+  async function sendChat(userText){
+    appendMessage("user", userText);
+    chatHistory.push({ role: "user", content: userText });
+    const loadingEl = appendMessage("assistant", "thinking…", true);
+    document.getElementById("chat-send").disabled = true;
+
+    try{
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/chat-proxy`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "apikey": SUPABASE_KEY
+        },
+        body: JSON.stringify({
+          system: buildSystemPrompt(),
+          messages: chatHistory
+        })
+      });
+      const data = await res.json();
+      if(!res.ok){
+        throw new Error(data.error || `Chat service returned status ${res.status}`);
+      }
+      const textBlock = (data.content || []).find(b => b.type === "text");
+      let raw = textBlock ? textBlock.text : "{}";
+      raw = raw.trim().replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+      let parsed;
+      try{
+        parsed = JSON.parse(raw);
+      }catch(e){
+        // The model may have added stray text before/after the JSON object.
+        // Try to recover by extracting just the {...} block and parsing that.
+        const match = raw.match(/\{[\s\S]*\}/);
+        if(match){
+          try{ parsed = JSON.parse(match[0]); }catch(e2){ parsed = null; }
+        }
+        if(!parsed){
+          parsed = { answer: textBlock ? textBlock.text : "Sorry, I had trouble with that — can you try rephrasing?", matches: [] };
+        }
+      }
+      loadingEl.classList.remove("loading");
+      const validNames = renderAssistantMessage(loadingEl, parsed.answer, parsed.matches);
+      chatHistory.push({ role: "assistant", content: parsed.answer });
+      if(validNames.length){
+        highlightLocations(validNames);
+      }
+    }catch(err){
+      console.error("Chat request failed:", err);
+      loadingEl.classList.remove("loading");
+      loadingEl.textContent = "I couldn't reach the guide just now: " + err.message;
+    }finally{
+      document.getElementById("chat-send").disabled = false;
+    }
+  }
+
+  document.getElementById("chat-toggle").addEventListener("click", () => {
+    document.getElementById("chat-panel").classList.add("open");
+  });
+  document.getElementById("chat-close").addEventListener("click", () => {
+    document.getElementById("chat-panel").classList.remove("open");
+  });
+  document.getElementById("filters-toggle-btn").addEventListener("click", () => {
+    const panel = document.getElementById("filters-panel");
+    const btn = document.getElementById("filters-toggle-btn");
+    const isOpen = panel.classList.toggle("open");
+    btn.textContent = isOpen ? "Done ▴" : "Edit filters ▾";
+  });
+  document.getElementById("chat-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = "";
+    sendChat(text);
+  });
+  document.getElementById("chat-empty").addEventListener("click", e => {
+    const ex = e.target.closest(".example");
+    if(!ex) return;
+    document.getElementById("chat-panel").classList.add("open");
+    sendChat(ex.dataset.q);
+  });
+
+  // --- init ---
+  function initMap(){
+    map = L.map("map", { minZoom: 8, maxZoom: 18, zoomControl: true }).setView([43.75, -70.25], 10);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+    layerGroup = L.layerGroup().addTo(map);
+  }
+
+  function showMapStatus(html){
+    let el = document.getElementById("map-status");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "map-status";
+      document.querySelector(".map-wrap").appendChild(el);
+    }
+    el.innerHTML = html;
+  }
+
+  function clearMapStatus(){
+    const el = document.getElementById("map-status");
+    if(el) el.remove();
+  }
+
+  async function loadLocations(){
+    showMapStatus(`<div class="map-loading">Loading places…</div>`);
+    try{
+      console.log("Fetching locations from Supabase…");
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/locations?select=*&order=name`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      const bodyText = await res.text();
+      if(!res.ok){
+        throw new Error(`Database returned status ${res.status}: ${bodyText.slice(0, 200)}`);
+      }
+      let data;
+      try{
+        data = JSON.parse(bodyText);
+      }catch(parseErr){
+        throw new Error("Database response wasn't valid JSON: " + bodyText.slice(0, 200));
+      }
+      if(!Array.isArray(data)){
+        throw new Error("Unexpected response shape from database: " + bodyText.slice(0, 200));
+      }
+      console.log(`Loaded ${data.length} locations.`);
+      allLocations = data;
+      clearMapStatus();
+      if(allLocations.length === 0){
+        showMapStatus(`<div class="map-error"><div>The database connected fine, but returned zero locations.</div></div>`);
+      }
+      render();
+      if(allLocations.length){
+        const bounds = L.latLngBounds(allLocations.map(l => [l.lat, l.lng]));
+        map.fitBounds(bounds.pad(0.15));
+      }
+    }catch(err){
+      console.error("loadLocations failed:", err);
+      showMapStatus(`
+        <div class="map-error">
+          <div>Couldn't load places from the database.<br>${escapeHtml(err.message)}</div>
+          <button onclick="location.reload()">Try again</button>
+        </div>`);
+    }
+  }
+
+  initMap();
+  loadLocations();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+env/
+
+# Generated Excel review files (intermediate build artifacts)
+*.xlsx
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Local environment (if you add a build step later)
+.env
+.env.local

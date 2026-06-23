@@ -1,0 +1,82 @@
+import pandas as pd
+
+rows = [
+# Outdoors
+("Evergreen Cemetery","Outdoors","Portland","Historic Victorian cemetery turned everyday escape, with winding paths for walking, jogging, and biking that connect to the adjoining trail network.","Free","Year-round","https://maps.app.goo.gl/JyPPF947Rd6CieAD8",43.6817675,-70.2964696),
+("Baxter Woods","Outdoors","Portland","A pocket of deep woods five minutes from downtown that feels like the Maine wilderness.","Free","Year-round","https://maps.app.goo.gl/xhuYo9khF29hEyc59",43.6766291,-70.2903641),
+("Back Cove Trail","Outdoors","Portland","Gravel loop trail around the Back Cove estuary with a dedicated bike lane, public art, and skyline views; connects onward to the East End Trail and beach.","Free","Year-round","https://maps.app.goo.gl/Evjs2UwtZNyrQhZU7",43.671242,-70.2587468),
+("Eastern Promenade","Outdoors","Portland","Hillside park with sweeping views of Casco Bay, kayak rentals, and a food truck park at the base.","Free","Year-round","https://www.google.com/maps/place/Eastern+Promenade,+Portland,+ME+04101",43.6701086,-70.247155),
+("Fort Williams Park","Outdoors","Cape Elizabeth","Dramatic cliffside park around the iconic Portland Head Light, with paved trails and rocky overlooks.","$ (parking)","Year-round","https://maps.app.goo.gl/jYnEf8fwBaCsUnPr6",43.6220929,-70.2119708),
+("Kettle Cove State Park","Outdoors","Cape Elizabeth","Calm, protected swimming beach with a south-facing bluff perfect for sunset picnics; arrive by 10am on summer weekends.","$","Summer","https://maps.app.goo.gl/2ouS7YnCVck9Zp1Z9",43.5611111,-70.2175),
+("Two Lights State Park","Outdoors","Cape Elizabeth","Rocky, slabby coastline made for climbing and sunbathing rather than swimming, with picnic tables and grills.","$","Year-round","https://maps.app.goo.gl/KCnvkGFpmjVpiauB7",43.5596889,-70.2044583),
+("Crescent Beach State Park","Outdoors","Cape Elizabeth","Expansive sandy beach with showers and free L.L.Bean beach gear to borrow in summer.","$","Summer","https://maps.app.goo.gl/89Uh13nkcJTWkiJt7",43.5633195,-70.2297397),
+("Scarborough Marsh","Outdoors","Scarborough","Maine's largest salt marsh, great for a wildlife-watching paddle with rentals through the Audubon Center.","$ (rental)","Spring-Fall","https://maps.app.goo.gl/rFnUn83F9hdTs8wB8",43.5509329,-70.3333113),
+("Scarborough Beach State Park","Outdoors","Scarborough","Bigger swells make this a go-to for surfing and boogie boarding; watch for occasional rip currents.","$","Summer","https://maps.app.goo.gl/iih3KH2ZpyvcXKC38",43.546229,-70.313046),
+("Pine Point Beach","Outdoors","Scarborough","Quieter surf beach south of Portland, popular for bigger waves.","Free","Summer","https://maps.app.goo.gl/wh76an6GXEXcnd2d9",43.5425842,-70.3328265),
+("Higgins Beach","Outdoors","Scarborough","Exposed, surf-friendly beach with a real local beach-town feel.","Free","Summer","https://maps.app.goo.gl/87kUAP7wkthDrgGL9",43.5614039,-70.2768561),
+("Great Pond","Outdoors","Cape Elizabeth","A quieter paddling spot for canoes and kayaks.","Free","Summer","https://maps.app.goo.gl/6BwfFQKEodAooHWLA",43.5754621,-70.2333433),
+("Spurwink River","Outdoors","Cape Elizabeth","Tidal river paddling; time your put-in and return around the tides.","Free","Summer","https://maps.app.goo.gl/KzZEJMowNHY5GeMB9",43.5827518,-70.2575305),
+("Shaw Park","Outdoors","Gorham","Community park with a small beach, kayak launch, and walking trails along the Presumpscot River.","Free","Summer","https://maps.app.goo.gl/zFFW68kgDZYmttmCA",43.7478535,-70.4470494),
+("Highland Lake","Outdoors","Windham","A classic Maine lake for paddling and wildlife viewing.","Free","Summer","https://maps.app.goo.gl/9DK7didkEzYbmpFL8",43.7715106,-70.3574159),
+("Sabbathday Lake (Outlet Beach)","Outdoors","New Gloucester","Kid-friendly lake beach with water slides, diving boards, and a small day-use fee, plus a beloved ice cream shop next door.","$","Summer","https://maps.app.goo.gl/oM7sdNpUwr3GMfR28",43.9886562,-70.3495006),
+("Peaks Island","Outdoors","Portland (Casco Bay)","A 20-minute ferry from Portland that feels worlds away; explore by bike or golf cart, best late summer into fall.","$ (ferry)","Summer-Fall","https://maps.app.goo.gl/du8R5Rmgt4L6zDecA",43.6555701,-70.1993493),
+("Great Diamond Island","Outdoors","Portland (Casco Bay)","Known for stately summer homes and colorful pebble beaches; best explored by bike.","$ (ferry)","Summer","https://maps.app.goo.gl/YcEhKefejgoTNv1R6",43.682102,-70.1964137),
+("Long Island","Outdoors","Portland (Casco Bay)","Less developed than Peaks, with one of the best swimming beaches in Casco Bay; pack a cooler.","$ (ferry)","Summer","https://www.google.com/maps/place/South+Beach",43.6804185,-70.1580544),
+("Chebeague Island","Outdoors","Cumberland (Casco Bay)","Short ferry from Cousins Island; come for Adirondack chairs, sunset cocktails, and a 9-hole golf course at the Inn.","$$ (ferry+inn)","Summer","https://www.google.com/maps/place/Chebeague+Island+Inn",43.7522826,-70.1031926),
+("Mackworth Island State Park","Outdoors","Falmouth","Easy 3-mile loop trail with views of Portland's Eastern Prom; arrive by 10am in summer for parking.","$","Year-round","https://maps.app.goo.gl/AFye535pdtpDxX3F7",43.6897469,-70.2347149),
+("Cousins Island","Outdoors","Yarmouth","Scenic 30-mile out-and-back bike destination along Route 88 with Casco Bay views.","Free","Year-round","https://maps.app.goo.gl/DGekQ25tFmm4yeMN6",43.7663291,-70.1381517),
+("Bailey's Island","Outdoors","Harpswell","An ambitious 80-mile round-trip cycling destination, with camping at Wolfe's Neck along the way.","Free","Year-round","https://maps.app.goo.gl/xDifR9HgS8UzjAnt7",43.7366927,-69.9940654),
+("Wolfe's Neck Woods State Park","Outdoors","Freeport","Coastal trails and a popular overnight camping spot for cyclists riding the Casco Bay loop.","$ (camping)","Summer","https://maps.app.goo.gl/vUwgJzQndnQVU2gs8",43.8225918,-70.0844692),
+("East Windham Conservation Area","Outdoors","Windham","Well-maintained mountain biking trails for all ability levels, about 20 minutes from Portland.","Free","Year-round","https://maps.app.goo.gl/vfUHWvh45Bbr2bCSA",43.808599,-70.372401),
+("Portland Paddle","Outdoors","Portland","Rent sea kayaks or paddle boards right on the Eastern Prom waterfront.","$$ (rental)","Summer","https://maps.app.goo.gl/RyRwmhAMPoDnEm9x8",43.6698649,-70.2420061),
+("CycleMania","Outdoors","Portland","Friendly bike shop renting road and city bikes for exploring Portland and the coast.","$$ (rental)","Year-round","https://g.co/kgs/UCMt29Y",43.668491,-70.256176),
+("Gorham Bike & Ski","Outdoors","Portland","Rents gravel and mountain bikes, with access to a network of well-maintained nearby trails.","$$ (rental)","Year-round","https://maps.app.goo.gl/vofniM5sgUpYCHpB9",43.6531644,-70.2678903),
+# Food & Dining
+("Coveside Coffee","Food & Dining","Portland","Cozy, eco-conscious neighborhood coffee shop on Back Cove; good cold brew and cider donuts.","$","Year-round","https://maps.app.goo.gl/R39N23KUW9V9edFf6",43.6719035,-70.2832904),
+("Mr. Tuna","Food & Dining","Portland","Popular food truck at the Eastern Prom food truck park.","$","Summer","https://maps.app.goo.gl/by7P1RS8FNN3aZUr7",43.66979,-70.2433333),
+("Gelato Fiasco","Food & Dining","Portland","Beloved Maine gelato shop with inventive flavors, including a brown butter lobster scoop.","$","Year-round","https://maps.app.goo.gl/XnQPBibiDDiNMCQu8",43.6561906,-70.254282),
+("Bite Into Maine","Food & Dining","Cape Elizabeth","Lobster roll food truck parked near Portland Head Light, arguably the best view-to-meal ratio in Maine.","$$","Summer","https://maps.app.goo.gl/qVgo9GWZz9NFdHjt5",43.624021,-70.2111453),
+("Kettle Cove Ice Cream & Shack","Food & Dining","Cape Elizabeth","Classic New England ice cream and burger shack right by the beach.","$","Summer","https://maps.app.goo.gl/o4PJY5CTsQBe92LU7",43.5697966,-70.2226306),
+("Besca and the Honeybee","Food & Dining","New Gloucester","Gourmet, inventive ice cream right on the water at Sabbathday Lake.","$","Summer","https://maps.app.goo.gl/TGyPe6DiFAr6iUMh7",43.9886761,-70.3495473),
+("Lobster Shack at Two Lights","Food & Dining","Cape Elizabeth","Classic lobster shack with outdoor picnic tables at the edge of the state park.","$$","Summer","https://maps.app.goo.gl/5yywgSALwbSxPudd8",43.5596889,-70.2044583),
+("The Good Table","Food & Dining","Cape Elizabeth","Locals' favorite for brunch and happy hour, just up the road from Crescent Beach.","$$","Year-round","https://maps.app.goo.gl/NbVVjYhZJdb4bUy4A",43.5731506,-70.2212363),
+("Peaks Island Shellfish Company","Food & Dining","Portland (Peaks Island)","Al fresco oysters and tuna sashimi on Peaks Island; pack a picnic off-season, since most spots close.","$$","Summer","https://maps.app.goo.gl/i4qx7xm5C52hQBEg6",43.6567864,-70.1973505),
+("Crown Jewel","Food & Dining","Portland (Great Diamond Island)","Fun tiki bar and restaurant reachable only by ferry or boat; book ahead.","$$","Summer","https://maps.app.goo.gl/iNUBDxZ9BHHp3KjC7",43.6835032,-70.1937518),
+("Byers & Sons Long Island Bakehouse","Food & Dining","Portland (Long Island)","The only cafe on Long Island; good lobster rolls and baked goods.","$","Summer","https://www.google.com/maps/place/Byers+%26+Sons+Long+Island+Bakehouse",43.6888355,-70.1684112),
+("Norimoto Bakery","Food & Dining","Portland","James Beard award-winning, Japanese-inspired pastry shop in Deering Center; expect a line.","$","Year-round","https://maps.app.goo.gl/1j1WsVFAUBGjniLS8",43.6745175,-70.2948742),
+("Noble","Food & Dining","Portland","East Texas BBQ and NY-style pizza in one spot.","$$","Year-round","https://maps.app.goo.gl/5xn4dpa3rHs5ogz4A",43.6986624,-70.3119967),
+("Lecha","Food & Dining","Portland","Ice cream and boba in Deering Center's 'the village' strip.","$","Year-round","https://maps.app.goo.gl/LpTGfFsgq5whcp1y6",43.675732,-70.2950837),
+("Rambler Cafe","Food & Dining","Portland","Neighborhood coffee shop with a flower bar; good coffee and good conversation.","$","Year-round","https://maps.app.goo.gl/Nf5PwwfpzAd76gBj8",43.6742921,-70.2950807),
+("Belleville","Food & Dining","Portland","Pizza and pastries on Munjoy Hill, with a sister shop in Deering Center.","$","Year-round","https://maps.app.goo.gl/mYWV9djpu2Y3rKQN9",43.6743456,-70.2858213),
+("Lil Chippy","Food & Dining","Portland","$1 oysters and $3 lagers at happy hour (3-5p daily); a Munjoy Hill institution.","$","Year-round","https://maps.app.goo.gl/gTQpdJa6KAytUNzi9",43.665002,-70.2521419),
+("Oxbow Brewing","Food & Dining","Portland","Wild-yeasted beers from a local brewery, with a blending & bottling taproom near Munjoy Hill.","$$","Year-round","https://maps.app.goo.gl/RnWGcazkJS2y8mTK8",43.6649733,-70.2516373),
+("Tandem Coffee and Bakery","Food & Dining","Portland","West End coffee and bakery known for jammy biscuits; arrive early.","$$","Year-round","https://maps.app.goo.gl/wgrvbiuis4q1zNTo9",43.6530946,-70.2705388),
+("Little Pig","Food & Dining","Portland","Order-window Thai street food in the West End; eat on the patio or take it to the Western Prom.","$","Year-round","https://maps.app.goo.gl/f8etk4zJmh3QGxTNA",43.6527848,-70.2695307),
+("Leeward","Food & Dining","Portland","Italian-inspired fine dining with homemade pasta; reservations recommended.","$$$","Year-round","https://maps.app.goo.gl/7W4edKDwrdZGjR6XA",43.6555297,-70.2602997),
+("Twelve","Food & Dining","Portland","Elevated tasting-menu dining with a chef's counter; reservations recommended.","$$$","Year-round","https://maps.app.goo.gl/vSPsQB9uqt8QsjnW8",43.6622809,-70.2441623),
+("Fore Street","Food & Dining","Portland","Portland's open-kitchen, wood-fired institution; reservations recommended.","$$$","Year-round","https://maps.app.goo.gl/G1X9vQdKuLCzWKiQ6",43.6581699,-70.2509802),
+("Izakaya Minato","Food & Dining","Portland","Japanese bar food in a historic former police station; walk-ins only, expect a wait.","$$","Year-round","https://maps.app.goo.gl/UX4JYDkxBrUARiT98",43.6650909,-70.2521974),
+("Oun Lido's","Food & Dining","Portland","Excellent Cambodian food, walk-in only and a great weeknight bet.","$$","Year-round","https://maps.app.goo.gl/nas3cmppRaSD8178A",43.6568843,-70.2530552),
+("Bunker Brewing","Food & Dining","Portland","Sours and pilsners with board games, ping pong, and a patio.","$$","Year-round","https://maps.app.goo.gl/1aHzXpCMhy1FUsXv6",43.652628,-70.2837344),
+("Apres","Food & Dining","Portland","Dry ciders in a lively, large-format taproom.","$$","Year-round","https://maps.app.goo.gl/NvVp7UrgUe2eCj1D8",43.6672801,-70.2560205),
+("Portland Zoo","Food & Dining","Portland","Soccer-watching bar with a backyard-party vibe; popular on Hearts of Pine match days.","$$","Year-round","https://maps.app.goo.gl/JkSAFCKAB4NCztFk8",43.6667361,-70.2549307),
+# Culture
+("Deering Center (\"the village\")","Culture","Portland","A tiny strip of beloved local shops on Stevens Avenue: bakeries, pizza, ice cream, coffee, and a print shop within a block.","Free","Year-round","https://maps.app.goo.gl/HzW2F9gr3e979CZC7",43.6759147,-70.2983825),
+("Munjoy Hill / East End","Culture","Portland","Fast-gentrifying neighborhood packed with cafes, bookstores, bakeries, and breweries; fun just to wander.","Free","Year-round","https://www.google.com/maps/place/East+End,+Portland,+ME",43.6673041,-70.2489369),
+("Hearts of Pine @ Fitzpatrick Stadium","Culture","Portland","Maine's new pro soccer team; raucous, family-friendly home games with flags, drums, and food trucks.","$$ (tickets)","Summer","https://maps.app.goo.gl/QLSwbjaD3NixSL9v8",43.6579507,-70.2766242),
+("Portland Sea Dogs @ Hadlock Field","Culture","Portland","Boston Red Sox AA affiliate; classic minor-league baseball with Sea Dog 'biscuits' and ice cream sandwiches.","$$ (tickets)","Summer","https://www.google.com/maps/place/Hadlock+Field",43.6567897,-70.2780859),
+("Portland Museum of Art","Culture","Portland","Contemporary and indigenous Maine art; free every 3rd Thursday and Friday evenings (4-8p) with live music.","$$ (free some days)","Year-round","https://www.google.com/maps/place/Portland+Museum+of+Art",43.6537048,-70.2619625),
+("West End","Culture","Portland","Upscale historic neighborhood around the art museum: galleries, used bookstores, and print studios along Congress Street.","Free","Year-round","https://maps.google.com?q=West+End,+Portland,+ME",43.648969,-70.2703472),
+("Deering Oaks Park","Culture","Portland","Portland's Central Park, with a splash pad, a Saturday/Wednesday farmers market, and free outdoor Shakespeare every July weekend.","Free","Summer","https://maps.app.goo.gl/rdHk9pRuR2vJmTp26",43.6588394,-70.2718884),
+("Washington Baths","Culture","Portland","Sauna, cold plunge, and soaking pools with a music listening room; closed in July and August.","$$","Year-round (closed Jul-Aug)","https://maps.app.goo.gl/C1i6D94ASRBpJJEi6",43.6681725,-70.2533101),
+("Print: A Bookstore","Culture","Portland","Beloved indie bookstore on Munjoy Hill with a strong Maine-authors section.","Free","Year-round","https://maps.app.goo.gl/FVMMjegUj2URCTYE9",43.6620737,-70.2526883),
+("Open Studio","Culture","Portland","Local Portland printmaker's shop for Maine-made souvenirs, stationery, and prints.","$","Year-round","https://maps.app.goo.gl/L3R1JX6skzQZ5pyAA",43.6741386,-70.29498),
+]
+
+df = pd.DataFrame(rows, columns=["name","category","town","description","price","season","maps_url","lat","lng"])
+df.insert(0, "id", range(1, len(df)+1))
+df.insert(2, "region", "Portland & Southern Maine")
+
+df.to_excel("/mnt/user-data/outputs/maine_locations_portland_southern.xlsx", index=False, sheet_name="Locations")
+print(f"Wrote {len(df)} rows")
+print(df['category'].value_counts())
