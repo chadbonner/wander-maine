@@ -504,7 +504,7 @@
   const SUPABASE_URL = "https://skylwvepsgxwxhblqyil.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNreWx3dmVwc2d4d3hoYmxxeWlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDk3MTYsImV4cCI6MjA5NzI4NTcxNn0.YQT6DH8alaGMy1lqCSpiLKwmsF7_Xm-11opo5Ik7YEs";
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let allLocations = [];
   let markerRefs = {};
@@ -771,7 +771,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     document.getElementById("chat-send").disabled = true;
 
     try{
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       const token = session ? session.access_token : SUPABASE_KEY;
       const res = await fetch(`${SUPABASE_URL}/functions/v1/chat-proxy`, {
         method: "POST",
@@ -870,7 +870,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     }
     const btn = document.getElementById("auth-send-btn");
     btn.disabled = true; btn.textContent = "Sending…";
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await sb.auth.signInWithOtp({ email });
     btn.disabled = false; btn.textContent = "Send code";
     if(error){ showAuthError("auth-error-email", error.message); return; }
     pendingEmail = email;
@@ -888,7 +888,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     }
     const btn = document.getElementById("auth-verify-btn");
     btn.disabled = true; btn.textContent = "Verifying…";
-    const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token, type: "email" });
+    const { error } = await sb.auth.verifyOtp({ email: pendingEmail, token, type: "email" });
     btn.disabled = false; btn.textContent = "Verify";
     if(error){ showAuthError("auth-error-otp", "That code didn't work — please check it and try again."); return; }
     // onAuthStateChange will show the app
@@ -910,7 +910,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
   });
 
   document.getElementById("signout-btn").addEventListener("click", async () => {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
   });
 
   // ── App / Auth screen toggling ──
@@ -938,12 +938,12 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
   }
 
   // Listen for auth state changes (sign-in, sign-out, session restore)
-  supabase.auth.onAuthStateChange((_event, session) => {
+  sb.auth.onAuthStateChange((_event, session) => {
     if(session){ showApp(); } else { showAuthScreen(); }
   });
 
   // Check for an existing session on page load
-  supabase.auth.getSession().then(({ data: { session } }) => {
+  sb.auth.getSession().then(({ data: { session } }) => {
     if(session){ showApp(); } else { showAuthScreen(); }
   });
 
@@ -975,7 +975,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
   async function loadLocations(){
     showMapStatus(`<div class="map-loading">Loading places…</div>`);
     try{
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       const token = session ? session.access_token : SUPABASE_KEY;
       console.log("Fetching locations from Supabase…");
       const res = await fetch(`${SUPABASE_URL}/rest/v1/locations?select=*&order=name`, {
