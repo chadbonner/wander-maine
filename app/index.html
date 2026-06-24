@@ -9,19 +9,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cream:#F4EFE3;
+    --cream:#F2FAF5;
     --surface:#FFFFFF;
-    --ink:#20281F;
-    --ink-soft:#5B6258;
-    --border:#DCD3BC;
-    --pine:#3C6E47;
-    --pine-dim:#E8EFE8;
+    --ink:#162518;
+    --ink-soft:#4A6A52;
+    --border:#B8DEC4;
+    --pine:#2E6F40;
+    --pine-dim:#E6F7EC;
     --lobster:#C75A33;
     --lobster-dim:#F6E6DD;
     --plum:#5C5189;
     --plum-dim:#EAE7F2;
     --buoy:#E2A33B;
-    --amber:#B8671E;
+    --amber:#253D2C;
     --radius:14px;
   }
   *{box-sizing:border-box;}
@@ -48,24 +48,28 @@
   }
 
   header{
-    display:flex;align-items:baseline;gap:14px;
-    padding:16px 22px;
-    border-bottom:1px solid var(--border);
-    background:var(--cream);
+    display:flex;align-items:center;gap:14px;
+    padding:12px 22px;
+    border-bottom:1px solid #253D2C;
+    background:#253D2C;
     flex-shrink:0;
     z-index:20;
   }
   header h1{
     font-family:'Outfit', sans-serif;
     font-weight:700;
-    font-size:24px;
+    font-size:20px;
     margin:0;
     letter-spacing:-0.01em;
+    color:#CFFFDC;
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
   header .count{
     margin-left:auto;
     font-size:13px;
-    color:var(--ink-soft);
+    color:#68BA7F;
     font-variant-numeric:tabular-nums;
   }
 
@@ -109,11 +113,11 @@
     user-select:none;
   }
   .chip:hover{border-color:var(--ink-soft);}
-  .chip.active{color:#fff;border-color:transparent;background:var(--ink);}
-  .chip.active[data-cat="Outdoors"]{background:var(--ink);}
-  .chip.active[data-cat="Food & Dining"]{background:var(--ink);}
-  .chip.active[data-cat="Culture"]{background:var(--ink);}
-  .chip.active[data-single="true"]{background:var(--ink);}
+  .chip.active{color:#CFFFDC;border-color:transparent;background:var(--pine);}
+  .chip.active[data-cat="Outdoors"]{background:var(--pine);}
+  .chip.active[data-cat="Food & Dining"]{background:var(--pine);}
+  .chip.active[data-cat="Culture"]{background:var(--pine);}
+  .chip.active[data-single="true"]{background:var(--pine);}
 
   .search-box{
     width:100%;
@@ -343,7 +347,7 @@
     max-width:420px;width:100%;
     box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center;
   }
-  .auth-logo{font-size:28px;font-weight:700;color:var(--ink);margin:0 0 6px;}
+  .auth-logo{font-size:24px;font-weight:700;color:#253D2C;margin:0 0 6px;}
   .auth-tagline{font-size:14px;color:var(--ink-soft);margin:0 0 32px;}
   .auth-label{
     display:block;font-size:12px;font-weight:700;
@@ -380,11 +384,11 @@
     display:none;text-align:left;
   }
   .signout-btn{
-    background:none;border:1px solid var(--border);border-radius:8px;
+    background:none;border:1px solid #4A7A5A;border-radius:8px;
     padding:4px 10px;font-family:'Outfit',sans-serif;font-size:12px;
-    color:var(--ink-soft);cursor:pointer;flex-shrink:0;margin-left:8px;
+    color:#CFFFDC;cursor:pointer;flex-shrink:0;margin-left:8px;
   }
-  .signout-btn:hover{background:var(--pine-dim);}
+  .signout-btn:hover{background:#2E6F40;}
 
 </style>
 </head>
@@ -393,8 +397,14 @@
 <!-- Auth Screen -->
 <div id="auth-screen" style="display:none;">
   <div class="auth-card">
-    <h1 class="auth-logo">Wander Maine</h1>
-    <p class="auth-tagline">Your personal guide to the best of Maine</p>
+      <svg width="48" height="56" viewBox="0 0 48 60" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 10px;" aria-hidden="true">
+        <polygon points="24,22 5,48 43,48" fill="#68BA7F"/>
+        <polygon points="24,12 8,34 40,34" fill="#2E6F40"/>
+        <polygon points="24,2 13,20 35,20" fill="#253D2C"/>
+        <rect x="19" y="48" width="10" height="8" fill="#253D2C"/>
+      </svg>
+      <h1 class="auth-logo">Wander Maine</h1>
+      <p class="auth-tagline">Your personal guide to the best of Maine</p>
 
     <!-- Step 1: Email entry -->
     <div id="auth-step-email">
@@ -417,7 +427,15 @@
 
 <div id="app" style="display:none;">
   <header>
-    <h1>Wander Maine</h1>
+    <h1>
+      <svg width="22" height="28" viewBox="0 0 48 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+        <polygon points="24,22 5,48 43,48" fill="#68BA7F"/>
+        <polygon points="24,12 8,34 40,34" fill="#68BA7F"/>
+        <polygon points="24,2 13,20 35,20" fill="#CFFFDC"/>
+        <rect x="19" y="48" width="10" height="8" fill="#68BA7F"/>
+      </svg>
+      Wander Maine
+    </h1>
     <span class="count" id="result-count">Loading…</span>
     <button class="signout-btn" id="signout-btn">Sign out</button>
   </header>
