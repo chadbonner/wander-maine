@@ -402,18 +402,14 @@
       <label class="auth-label" for="auth-email">Email address</label>
       <input class="auth-input" id="auth-email" type="email"
              placeholder="you@example.com" autocomplete="email">
-      <button class="auth-btn" id="auth-send-btn">Send code</button>
+      <button class="auth-btn" id="auth-send-btn" disabled>Send code</button>
     </div>
 
-    <!-- Step 2: OTP code entry -->
+    <!-- Step 2: Check email confirmation -->
     <div id="auth-step-otp" style="display:none;">
-      <p class="auth-hint">We sent a 6-digit code to<br><strong id="auth-email-shown"></strong></p>
-      <div class="auth-error" id="auth-error-otp"></div>
-      <label class="auth-label" for="auth-token">Verification code</label>
-      <input class="auth-input auth-otp-input" id="auth-token" type="text"
-             inputmode="numeric" pattern="[0-9]*" maxlength="6"
-             placeholder="000000" autocomplete="one-time-code">
-      <button class="auth-btn" id="auth-verify-btn">Verify</button>
+      <div style="font-size:40px;margin-bottom:16px;">📬</div>
+      <p class="auth-hint">We sent a sign-in link to<br><strong id="auth-email-shown"></strong></p>
+      <p class="auth-hint" style="font-size:12px;margin-top:-8px;">Click the link in your email to access Wander Maine.<br>You can close this tab.</p>
       <button class="auth-back" id="auth-back-btn">← Try a different email</button>
     </div>
   </div>
@@ -853,14 +849,18 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
 
   function showAuthError(id, msg){
     const el = document.getElementById(id);
-    el.textContent = msg; el.style.display = "block";
+    if(el){ el.textContent = msg; el.style.display = "block"; }
   }
   function clearAuthErrors(){
-    ["auth-error-email","auth-error-otp"].forEach(id => {
-      const el = document.getElementById(id);
-      el.textContent = ""; el.style.display = "none";
-    });
+    const el = document.getElementById("auth-error-email");
+    if(el){ el.textContent = ""; el.style.display = "none"; }
   }
+
+  document.getElementById("auth-email").addEventListener("input", () => {
+    const email = document.getElementById("auth-email").value.trim();
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    document.getElementById("auth-send-btn").disabled = !valid;
+  });
 
   document.getElementById("auth-send-btn").addEventListener("click", async () => {
     clearAuthErrors();
@@ -880,33 +880,15 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     document.getElementById("auth-token").focus();
   });
 
-  document.getElementById("auth-verify-btn").addEventListener("click", async () => {
-    clearAuthErrors();
-    const token = document.getElementById("auth-token").value.trim();
-    if(token.length !== 6){
-      showAuthError("auth-error-otp", "Please enter the 6-digit code from your email."); return;
-    }
-    const btn = document.getElementById("auth-verify-btn");
-    btn.disabled = true; btn.textContent = "Verifying…";
-    const { error } = await sb.auth.verifyOtp({ email: pendingEmail, token, type: "email" });
-    btn.disabled = false; btn.textContent = "Verify";
-    if(error){ showAuthError("auth-error-otp", "That code didn't work — please check it and try again."); return; }
-    // onAuthStateChange will show the app
-  });
-
   document.getElementById("auth-back-btn").addEventListener("click", () => {
     clearAuthErrors();
     document.getElementById("auth-step-otp").style.display = "none";
     document.getElementById("auth-step-email").style.display = "block";
-    document.getElementById("auth-token").value = "";
     pendingEmail = "";
   });
 
   document.getElementById("auth-email").addEventListener("keydown", e => {
     if(e.key === "Enter") document.getElementById("auth-send-btn").click();
-  });
-  document.getElementById("auth-token").addEventListener("keydown", e => {
-    if(e.key === "Enter") document.getElementById("auth-verify-btn").click();
   });
 
   document.getElementById("signout-btn").addEventListener("click", async () => {
@@ -932,7 +914,6 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
     document.getElementById("auth-step-email").style.display = "block";
     document.getElementById("auth-step-otp").style.display = "none";
     document.getElementById("auth-email").value = "";
-    document.getElementById("auth-token").value = "";
     clearAuthErrors();
     pendingEmail = "";
   }
