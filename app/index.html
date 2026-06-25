@@ -20,7 +20,7 @@
     --lobster-dim:#F6E6DD;
     --plum:#5C5189;
     --plum-dim:#EAE7F2;
-    --buoy:#E2A33B;
+    --buoy:#C5B020;
     --amber:#253D2C;
     --radius:14px;
   }
@@ -146,8 +146,8 @@
   }
   .loc-card:hover{background:var(--cream);}
   .loc-card.highlighted{
-    background:#FFF7E9;
-    border-color:var(--buoy);
+    background:#FDFBE8;
+    border-color:#C5B020;
   }
   .loc-card .badge{
     display:inline-block;
@@ -164,8 +164,8 @@
   .badge.Culture{background:var(--plum-dim);color:var(--plum);}
   .loc-card .ai-tag{
     display:inline-flex;align-items:center;gap:4px;
-    font-size:10px;font-weight:600;color:#8A6512;
-    background:#FFF1D6;border-radius:5px;padding:2px 7px;margin-bottom:5px;margin-left:6px;
+    font-size:10px;font-weight:600;color:#6A5A08;
+    background:#F0E8A0;border-radius:5px;padding:2px 7px;margin-bottom:5px;margin-left:6px;
   }
   .loc-card .name{font-weight:600;font-size:15px;margin:0 0 2px;}
   .loc-card .meta{font-size:13px;color:var(--ink-soft);margin:0 0 4px;}
@@ -184,12 +184,12 @@
   }
   .loc-marker.highlighted .marker-pin{
     animation:pulse 1.4s ease-in-out infinite;
-    box-shadow:0 0 0 0 rgba(226,163,59,.6), 0 2px 6px rgba(0,0,0,.3);
+    box-shadow:0 0 0 0 rgba(197,176,32,.65), 0 2px 6px rgba(0,0,0,.3);
   }
   @keyframes pulse{
-    0%{box-shadow:0 0 0 0 rgba(226,163,59,.55), 0 2px 6px rgba(0,0,0,.3);}
-    70%{box-shadow:0 0 0 12px rgba(226,163,59,0), 0 2px 6px rgba(0,0,0,.3);}
-    100%{box-shadow:0 0 0 0 rgba(226,163,59,0), 0 2px 6px rgba(0,0,0,.3);}
+    0%{box-shadow:0 0 0 0 rgba(197,176,32,.6), 0 2px 6px rgba(0,0,0,.3);}
+    70%{box-shadow:0 0 0 12px rgba(197,176,32,0), 0 2px 6px rgba(0,0,0,.3);}
+    100%{box-shadow:0 0 0 0 rgba(197,176,32,0), 0 2px 6px rgba(0,0,0,.3);}
   }
   .leaflet-popup-content{font-family:'Outfit', sans-serif;min-width:200px;}
   .popup-name{font-family:'Outfit', sans-serif;font-weight:700;font-size:16px;margin:0 0 4px;}
@@ -430,9 +430,9 @@
     <h1>
       <svg width="22" height="28" viewBox="0 0 48 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
         <polygon points="24,22 5,48 43,48" fill="#68BA7F"/>
-        <polygon points="24,12 8,34 40,34" fill="#68BA7F"/>
+        <polygon points="24,12 8,34 40,34" fill="#2E6F40"/>
         <polygon points="24,2 13,20 35,20" fill="#CFFFDC"/>
-        <rect x="19" y="48" width="10" height="8" fill="#68BA7F"/>
+        <rect x="19" y="48" width="10" height="8" fill="#CFFFDC"/>
       </svg>
       Wander Maine
     </h1>
@@ -489,10 +489,10 @@
       <div id="map"></div>
     </main>
   </div>
-  <footer>Made with ❤️ by Chad Bonner (and his assistant, Claude) in Portland, Maine.</footer>
+  <footer>Made with ❤️ by Chad Bonner (and his assistant, Claude) in Portland, Maine. &nbsp;·&nbsp; <a href="mailto:chad@wandermaine.app?subject=Wander%20Maine%20feedback" style="color:var(--pine);text-decoration:none;font-weight:500;">Send me feedback</a></footer>
 </div>
 
-<button id="chat-toggle">💬 Ask your Maine guide</button>
+<button id="chat-toggle" style="display:none;">💬 Ask your Maine guide</button>
 <div id="chat-panel">
   <div class="chat-header">
     <h2>Your Maine guide</h2>
@@ -919,6 +919,7 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
   function showApp(){
     document.getElementById("auth-screen").style.display = "none";
     document.getElementById("app").style.display = "flex";
+    document.getElementById("chat-toggle").style.display = "flex";
     if(!appInitialized){
       appInitialized = true;
       initMap();
@@ -928,6 +929,8 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
 
   function showAuthScreen(){
     document.getElementById("app").style.display = "none";
+    document.getElementById("chat-toggle").style.display = "none";
+    document.getElementById("chat-panel").classList.remove("open");
     document.getElementById("auth-screen").style.display = "flex";
     document.getElementById("auth-step-email").style.display = "block";
     document.getElementById("auth-step-otp").style.display = "none";
