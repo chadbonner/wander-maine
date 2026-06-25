@@ -800,6 +800,11 @@ The "matches" array must contain the exact "name" values (copied exactly, case-s
         })
       });
       const data = await res.json();
+      if(res.status === 429 && data.rateLimited){
+        // Show rate limit message as a friendly assistant bubble
+        renderAssistantMessage(loadingEl, data.message, []);
+        return;
+      }
       if(!res.ok){
         throw new Error(data.error || `Chat service returned status ${res.status}`);
       }
